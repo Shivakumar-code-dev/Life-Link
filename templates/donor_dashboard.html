@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+{% block title %}My Dashboard — LifeFlow{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block content %}
+<div class="dashboard-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-profile">
+      <div class="avatar">{{ donor.name[0].upper() }}</div>
+      <h3>{{ donor.name }}</h3>
+      <p>{{ donor.blood_group }} · {{ donor.city }}</p>
+      <div style="margin-top:10px;">
+        <span class="badge badge-{{ donor.status }}">{{ donor.status.title() }}</span>
+      </div>
+    </div>
+    <ul class="sidebar-nav">
+      <li><a href="#" data-tab="overview" class="active">🏠 Overview</a></li>
+      <li><a href="#" data-tab="edit-profile">✏️ Edit Profile</a></li>
+      <li>
+        <a href="#" data-tab="requests">
+          🚨 Nearby Requests
+          {% if nearby_requests %}
+            <span class="sidebar-badge">{{ nearby_requests|length }}</span>
+          {% endif %}
+        </a>
+      </li>
+      <li><a href="#" data-tab="history">📋 Donation History</a></li>
+      <li style="margin-top:24px; border-top:1px solid rgba(255,255,255,0.1); padding-top:16px;">
+        <a href="{{ url_for('donor_logout') }}">🚪 Logout</a>
+      </li>
+    </ul>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="dashboard-main">
+    <div class="dashboard-header">
+      <h1>Welcome back, {{ donor.name.split()[0] }}! 👋</h1>
+      <p>{{ "Your account is active and visible to searchers." if donor.status == "approved" else "Your account is pending admin approval." }}</p>
+    </div>
+
+    <!-- OVERVIEW TAB -->
+    <div data-panel="overview">
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="number">{{ donor.blood_group }}</div>
+          <div class="label">Blood Group</div>
+        </div>
+        <div class="stat-card green">
+          <div class="number">{{ history|length }}</div>
+          <div class="label">Donations Logged</div>
+        </div>
+        <div class="stat-card orange">
+          <div class="number">{{ nearby_requests|length }}</div>
+          <div class="label">Nearby Requests</div>
+        </div>
+        <div class="stat-card blue">
+          <div class="number">{{ donor.age }}</div>
+          <div class="label">Age</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h2>📋 My Profile</h2>
+          <a href="#" data-tab="edit-profile" class="btn btn-outline btn-sm">Edit Profile</a>
+        </div>
+        <div class="panel-body" style="padding: 24px;">
+          <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+            {% set fields = [
+              ('Full Name', donor.name),
+              ('Email', donor.email),
+              ('Phone', donor.phone),
+              ('Blood Group', donor.blood_group),
+              ('City', donor.city),
+              ('Age', donor.age),
+              ('Address', donor.address),
+              ('Last Donation', donor.last_donation_date or 'Not recorded'),
+              ('Account Status', donor.status.title()),
+              ('Registered On', donor.registered_at[:10] if donor.registered_at else '—'),
+            ] %}
+            {% for label, value in fields %}
+            <div>
+              <div style="font-size:0.78rem; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--muted); margin-bottom:4px;">{{ label }}</div>
+              <div style="font-weight:600; color:var(--charcoal);">{{ value }}</div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- EDIT PROFILE TAB -->
+    <div data-panel="edit-profile" class="hidden">
+      <div class="panel">
+        <div class="panel-head"><h2>✏️ Edit Profile</h2></div>
+        <div class="panel-body" style="padding:28px;">
+          <form action="{{ url_for('donor_update') }}" method="POST">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" name="name" value="{{ donor.name }}" required />
+              </div>
+              <div class="form-group">
+                <label>Phone Number</label>
+                <input type="tel" name="phone" value="{{ donor.phone }}" required />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>City</label>
+                <input type="text" name="city" value="{{ donor.city }}" required />
+              </div>
+              <div class="form-group">
+                <label>Last Donation Date</label>
+                <input type="date" name="last_donation_date" value="{{ donor.last_donation_date }}" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Address</label>
+              <input type="text" name="address" value="{{ donor.address }}" />
+            </div>
+            <button type="submit" class="btn btn-primary">💾 Save Changes</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- NEARBY REQUESTS TAB -->
+    <div data-panel="requests" class="hidden">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>🚨 Nearby Emergency Requests in {{ donor.city }}</h2>
+        </div>
+        <div class="panel-body">
+          {% if nearby_requests %}
+          <table>
+            <thead>
+              <tr>
+                <th>Blood Group</th>
+                <th>Patient / Hospital</th>
+                <th>Contact</th>
+                <th>Urgency</th>
+                <th>Requested On</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for req in nearby_requests %}
+              <tr>
+                <td><span class="bg-chip">{{ req.blood_group }}</span></td>
+                <td>
+                  <strong>{{ req.patient_name }}</strong><br>
+                  <small style="color:var(--muted);">{{ req.hospital_name }}</small>
+                </td>
+                <td>{{ req.contact_number }}</td>
+                <td>
+                  <span class="badge badge-{{ req.urgency_level.lower() }}">{{ req.urgency_level }}</span>
+                </td>
+                <td>{{ req.requested_at[:10] }}</td>
+                <td><span class="badge badge-{{ req.status }}">{{ req.status.title() }}</span></td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% else %}
+            <div style="padding:40px; text-align:center; color:var(--muted);">
+              <div style="font-size:2.5rem; margin-bottom:12px;">✅</div>
+              <p>No emergency requests in your city right now.</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- DONATION HISTORY TAB -->
+    <div data-panel="history" class="hidden">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>📋 Donation History</h2>
+          <a href="#" data-tab="edit-profile" class="btn btn-primary btn-sm">+ Log Donation</a>
+        </div>
+        <div class="panel-body">
+          {% if history %}
+          <table>
+            <thead>
+              <tr><th>#</th><th>Donation Date</th><th>Logged On</th></tr>
+            </thead>
+            <tbody>
+              {% for h in history %}
+              <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ h.donated_at }}</td>
+                <td>{{ h.logged_at[:10] if h.logged_at else '—' }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% else %}
+            <div style="padding:40px; text-align:center; color:var(--muted);">
+              <div style="font-size:2.5rem; margin-bottom:12px;">🩸</div>
+              <p>No donation history logged yet. Update your last donation date to start tracking.</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+{% endblock %}

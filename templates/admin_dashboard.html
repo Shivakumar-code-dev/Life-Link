@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard — LifeFlow{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block content %}
+<div class="dashboard-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-profile">
+      <div class="avatar">🛡</div>
+      <h3>{{ admin_name }}</h3>
+      <p style="color:#F1948A;">Administrator</p>
+    </div>
+    <ul class="sidebar-nav">
+      <li><a href="#" data-tab="overview" class="active">📊 Overview</a></li>
+      <li>
+        <a href="#" data-tab="pending">
+          ⏳ Pending Approvals
+          {% if stats.pending > 0 %}<span class="sidebar-badge">{{ stats.pending }}</span>{% endif %}
+        </a>
+      </li>
+      <li><a href="#" data-tab="all-donors">👥 All Donors</a></li>
+      <li>
+        <a href="#" data-tab="requests">
+          🚨 Blood Requests
+          {% if stats.open_requests > 0 %}<span class="sidebar-badge">{{ stats.open_requests }}</span>{% endif %}
+        </a>
+      </li>
+      <li style="margin-top:24px; border-top:1px solid rgba(255,255,255,0.1); padding-top:16px;">
+        <a href="{{ url_for('admin_logout') }}">🚪 Logout</a>
+      </li>
+    </ul>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="dashboard-main">
+    <div class="dashboard-header">
+      <h1>Admin Dashboard 🛡️</h1>
+      <p>Manage donors, approvals, and emergency blood requests.</p>
+    </div>
+
+    <!-- OVERVIEW TAB -->
+    <div data-panel="overview">
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="number">{{ stats.total }}</div>
+          <div class="label">Total Donors</div>
+        </div>
+        <div class="stat-card green">
+          <div class="number">{{ stats.approved }}</div>
+          <div class="label">Approved</div>
+        </div>
+        <div class="stat-card orange">
+          <div class="number">{{ stats.pending }}</div>
+          <div class="label">Pending Approval</div>
+        </div>
+        <div class="stat-card" style="border-left-color:var(--red);">
+          <div class="number">{{ stats.rejected }}</div>
+          <div class="label">Rejected</div>
+        </div>
+        <div class="stat-card blue">
+          <div class="number">{{ stats.requests }}</div>
+          <div class="label">Total Requests</div>
+        </div>
+        <div class="stat-card" style="border-left-color:#E74C3C;">
+          <div class="number">{{ stats.open_requests }}</div>
+          <div class="label">Open Requests</div>
+        </div>
+      </div>
+
+      <!-- Blood Group Distribution -->
+      <div class="panel">
+        <div class="panel-head"><h2>🩸 Donor Distribution by Blood Group</h2></div>
+        <div class="panel-body" style="padding:24px;">
+          <div style="display:flex; gap:16px; flex-wrap:wrap;">
+            {% set blood_groups = {} %}
+            {% for d in all_donors if d.status == 'approved' %}
+              {%- set bg = d.blood_group -%}
+              {%- if bg not in blood_groups -%}{%- set _ = blood_groups.update({bg: 0}) -%}{%- endif -%}
+            {% endfor %}
+            {% for bg in ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] %}
+              {%- set count = all_donors | selectattr('blood_group', 'equalto', bg) | selectattr('status', 'equalto', 'approved') | list | length -%}
+              <div style="text-align:center;">
+                <div class="bg-chip" style="width:52px; height:52px; margin:0 auto 8px;">{{ bg }}</div>
+                <div style="font-weight:700; font-size:1.2rem;">{{ count }}</div>
+                <div style="font-size:0.75rem; color:var(--muted);">donors</div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PENDING APPROVALS TAB -->
+    <div data-panel="pending" class="hidden">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>⏳ Pending Donor Approvals ({{ pending_donors|length }})</h2>
+        </div>
+        <div class="panel-body">
+          {% if pending_donors %}
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Blood Group</th>
+                <th>City</th>
+                <th>Age</th>
+                <th>Phone</th>
+                <th>Registered</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for d in pending_donors %}
+              <tr>
+                <td>
+                  <strong>{{ d.name }}</strong><br>
+                  <small style="color:var(--muted);">{{ d.email }}</small>
+                </td>
+                <td><span class="bg-chip">{{ d.blood_group }}</span></td>
+                <td>{{ d.city }}</td>
+                <td>{{ d.age }}</td>
+                <td>{{ d.phone }}</td>
+                <td>{{ d.registered_at[:10] if d.registered_at else '—' }}</td>
+                <td>
+                  <div style="display:flex; gap:6px;">
+                    <a href="{{ url_for('approve_donor', donor_id=d.id) }}" class="btn btn-success btn-sm">✓ Approve</a>
+                    <a href="{{ url_for('reject_donor', donor_id=d.id) }}" class="btn btn-warning btn-sm" data-confirm="Reject this donor?">✗ Reject</a>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% else %}
+            <div style="padding:40px; text-align:center; color:var(--muted);">
+              <div style="font-size:2.5rem; margin-bottom:12px;">✅</div>
+              <p>No pending approvals. All donors have been reviewed.</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- ALL DONORS TAB -->
+    <div data-panel="all-donors" class="hidden">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>👥 All Donors ({{ all_donors|length }})</h2>
+          <input id="live-search" type="text" placeholder="🔍 Filter donors..." style="padding:8px 14px; border:2px solid var(--border); border-radius:8px; font-size:0.88rem; outline:none; width:220px;" />
+        </div>
+        <div class="panel-body">
+          {% if all_donors %}
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Blood Group</th>
+                <th>City</th>
+                <th>Phone</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for d in all_donors %}
+              <tr class="searchable-row">
+                <td>{{ loop.index }}</td>
+                <td>
+                  <strong>{{ d.name }}</strong><br>
+                  <small style="color:var(--muted);">{{ d.email }}</small>
+                </td>
+                <td><span class="bg-chip">{{ d.blood_group }}</span></td>
+                <td>{{ d.city }}</td>
+                <td>{{ d.phone }}</td>
+                <td><span class="badge badge-{{ d.status }}">{{ d.status.title() }}</span></td>
+                <td>
+                  <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                    {% if d.status == 'pending' %}
+                      <a href="{{ url_for('approve_donor', donor_id=d.id) }}" class="btn btn-success btn-sm">✓</a>
+                      <a href="{{ url_for('reject_donor', donor_id=d.id) }}" class="btn btn-warning btn-sm">✗</a>
+                    {% elif d.status == 'rejected' %}
+                      <a href="{{ url_for('approve_donor', donor_id=d.id) }}" class="btn btn-success btn-sm">Approve</a>
+                    {% endif %}
+                    <a href="{{ url_for('delete_donor', donor_id=d.id) }}" class="btn btn-danger btn-sm" data-confirm="Permanently delete this donor?">🗑</a>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% else %}
+            <div style="padding:40px; text-align:center; color:var(--muted);">No donors registered yet.</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOOD REQUESTS TAB -->
+    <div data-panel="requests" class="hidden">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>🚨 Emergency Blood Requests ({{ blood_requests|length }})</h2>
+        </div>
+        <div class="panel-body">
+          {% if blood_requests %}
+          <table>
+            <thead>
+              <tr>
+                <th>Patient / Hospital</th>
+                <th>Blood Group</th>
+                <th>City</th>
+                <th>Contact</th>
+                <th>Urgency</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for req in blood_requests %}
+              <tr>
+                <td>
+                  <strong>{{ req.patient_name }}</strong><br>
+                  <small style="color:var(--muted);">{{ req.hospital_name }}</small>
+                </td>
+                <td><span class="bg-chip">{{ req.blood_group }}</span></td>
+                <td>{{ req.city }}</td>
+                <td>{{ req.contact_number }}</td>
+                <td><span class="badge badge-{{ req.urgency_level.lower() }}">{{ req.urgency_level }}</span></td>
+                <td>{{ req.requested_at[:10] }}</td>
+                <td><span class="badge badge-{{ req.status }}">{{ req.status.title() }}</span></td>
+                <td>
+                  {% if req.status == 'open' %}
+                    <a href="{{ url_for('close_request', req_id=req.id) }}" class="btn btn-success btn-sm" data-confirm="Mark this request as closed?">✓ Close</a>
+                  {% else %}
+                    <span style="color:var(--muted); font-size:0.82rem;">Closed</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% else %}
+            <div style="padding:40px; text-align:center; color:var(--muted);">No blood requests submitted yet.</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+{% endblock %}

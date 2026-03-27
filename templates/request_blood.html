@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}Emergency Blood Request — LifeFlow{% endblock %}
+
+{% block content %}
+<div class="form-page">
+  <div class="form-card wide">
+
+    <div style="background:var(--red); color:var(--white); border-radius:var(--radius); padding:14px 20px; margin-bottom:28px; display:flex; align-items:center; gap:12px;">
+      <span style="font-size:1.8rem;">🚨</span>
+      <div>
+        <strong>Emergency Blood Request</strong>
+        <div style="font-size:0.85rem; opacity:0.85; margin-top:2px;">All nearby donors will be notified. Please ensure information is accurate.</div>
+      </div>
+    </div>
+
+    <h1 class="form-title">Request Blood</h1>
+    <p class="form-sub">Fill out this form to post an emergency blood request. Approved donors in your city will be able to see this request.</p>
+
+    <form action="{{ url_for('request_blood') }}" method="POST">
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Patient Name *</label>
+          <input type="text" name="patient_name" placeholder="Patient's full name" required />
+        </div>
+        <div class="form-group">
+          <label>Hospital Name *</label>
+          <input type="text" name="hospital_name" placeholder="Hospital / Medical Centre" required />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Blood Group Required *</label>
+          <select name="blood_group" required>
+            <option value="">— Select Blood Group —</option>
+            {% for bg in ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] %}
+              <option value="{{ bg }}">{{ bg }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>City *</label>
+          <input type="text" name="city" placeholder="City where blood is needed" required />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Contact Number *</label>
+        <input type="tel" name="contact_number" placeholder="Phone number to reach you" required />
+      </div>
+
+      <div class="form-group">
+        <label>Urgency Level *</label>
+        <div class="urgency-grid">
+          <div class="urgency-option">
+            <input type="radio" id="urgency_critical" name="urgency_level" value="Critical" required />
+            <label for="urgency_critical" style="border-color:var(--red);">
+              🔴 Critical<br>
+              <span style="font-weight:400; font-size:0.8rem;">Needed within hours</span>
+            </label>
+          </div>
+          <div class="urgency-option">
+            <input type="radio" id="urgency_high" name="urgency_level" value="High" />
+            <label for="urgency_high" style="border-color:var(--warning);">
+              🟡 High<br>
+              <span style="font-weight:400; font-size:0.8rem;">Needed within a day</span>
+            </label>
+          </div>
+          <div class="urgency-option">
+            <input type="radio" id="urgency_normal" name="urgency_level" value="Normal" />
+            <label for="urgency_normal" style="border-color:var(--info);">
+              🔵 Normal<br>
+              <span style="font-weight:400; font-size:0.8rem;">Within a few days</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center; padding:16px; font-size:1rem;">
+        🚨 Submit Emergency Request
+      </button>
+    </form>
+
+    <hr class="form-divider" />
+    <div class="form-footer">
+      Want to help instead? <a href="{{ url_for('donor_register') }}">Register as a donor</a> or <a href="{{ url_for('search_donor') }}">Find existing donors</a>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

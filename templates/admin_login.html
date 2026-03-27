@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Admin Login — LifeFlow{% endblock %}
+
+{% block content %}
+<div class="form-page" style="background: linear-gradient(135deg, var(--charcoal), #2C1A2E);">
+  <div class="form-card">
+    <div style="text-align:center; margin-bottom:32px;">
+      <div style="width:64px; height:64px; background:var(--red); border-radius:16px; display:flex; align-items:center; justify-content:center; font-size:2rem; margin:0 auto 16px;">🔐</div>
+      <h1 class="form-title">Admin Portal</h1>
+      <p class="form-sub">Restricted access. Admin credentials required.</p>
+    </div>
+
+    <form action="{{ url_for('admin_login') }}" method="POST">
+      <div class="form-group">
+        <label>Admin Email</label>
+        <input type="email" name="email" placeholder="admin@lifeflow.org" required autofocus />
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" name="password" placeholder="Admin password" required />
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center; padding:14px; margin-top:8px;">
+        🔐 Login as Admin
+      </button>
+    </form>
+
+    <hr class="form-divider" />
+    <div class="form-footer">
+      Not an admin? <a href="{{ url_for('donor_login') }}">Donor Login</a>
+    </div>
+    <div class="form-footer mt-1" style="font-size:0.82rem; color:var(--muted);">
+      First time setup? <a href="{{ url_for('admin_setup') }}">Create admin account</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

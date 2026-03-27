@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}LifeFlow — Blood Donation Portal{% endblock %}</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🩸</text></svg>" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  {% block head %}{% endblock %}
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="navbar">
+    <div class="container nav-inner">
+      <a href="{{ url_for('index') }}" class="nav-logo">
+        <span class="drop">🩸</span>
+        <span>LifeFlow</span>
+      </a>
+      <div class="nav-links" id="nav-links">
+        <a href="{{ url_for('index') }}" {% if request.endpoint=='index' %}class="active"{% endif %}>Home</a>
+        <a href="{{ url_for('search_donor') }}" {% if request.endpoint=='search_donor' %}class="active"{% endif %}>Find Donor</a>
+        <a href="{{ url_for('request_blood') }}" {% if request.endpoint=='request_blood' %}class="active"{% endif %}>Emergency Request</a>
+        {% if session.donor_id %}
+          <a href="{{ url_for('donor_dashboard') }}" {% if request.endpoint=='donor_dashboard' %}class="active"{% endif %}>My Dashboard</a>
+          <a href="{{ url_for('donor_logout') }}">Logout</a>
+        {% else %}
+          <a href="{{ url_for('donor_login') }}" {% if request.endpoint=='donor_login' %}class="active"{% endif %}>Donor Login</a>
+          <a href="{{ url_for('donor_register') }}" class="btn btn-primary btn-sm">Register</a>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
+
+  <!-- FLASH MESSAGES -->
+  <div class="container">
+    <div class="alerts-wrapper">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">⚡ {{ message }}</div>
+        {% endfor %}
+      {% endwith %}
+    </div>
+  </div>
+
+  <!-- PAGE CONTENT -->
+  {% block content %}{% endblock %}
+
+  <!-- FOOTER -->
+  {% block footer %}
+  <footer>
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <h3>🩸 LifeFlow Portal</h3>
+          <p>Connecting blood donors with those in need. Every donation is a gift of life. Register today and make a difference in your community.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Quick Links</h4>
+          <ul>
+            <li><a href="{{ url_for('donor_register') }}">Become a Donor</a></li>
+            <li><a href="{{ url_for('search_donor') }}">Find Donors</a></li>
+            <li><a href="{{ url_for('request_blood') }}">Emergency Request</a></li>
+            <li><a href="{{ url_for('donor_login') }}">Donor Login</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Information</h4>
+          <ul>
+            <li><a href="#">Blood Group Compatibility</a></li>
+            <li><a href="#">Donation Guidelines</a></li>
+            <li><a href="#">Admin Portal</a></li>
+            <li><a href="#">Contact Us</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>© 2025 LifeFlow Blood Donation Portal. All rights reserved.</span>
+        <a href="{{ url_for('admin_login') }}">Admin Login</a>
+      </div>
+    </div>
+  </footer>
+  {% endblock %}
+
+  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

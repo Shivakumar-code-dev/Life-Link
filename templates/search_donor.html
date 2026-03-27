@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}Find Blood Donors — LifeFlow{% endblock %}
+
+{% block content %}
+<div style="padding: 48px 0;">
+  <div class="container">
+
+    <div style="text-align:center; margin-bottom:40px;">
+      <div class="section-tag">Donor Directory</div>
+      <h1 class="section-title">Find a Blood Donor</h1>
+      <p class="section-sub">Search our verified donor database by blood group and city. All listed donors are approved and available.</p>
+    </div>
+
+    <!-- SEARCH BAR -->
+    <div class="search-bar">
+      <form action="{{ url_for('search_donor') }}" method="GET">
+        <div class="form-group">
+          <label>Blood Group</label>
+          <select name="blood_group">
+            <option value="">All Blood Groups</option>
+            {% for bg in ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] %}
+              <option value="{{ bg }}" {{ 'selected' if blood_group == bg }}>{{ bg }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>City</label>
+          <input type="text" name="city" value="{{ city }}" placeholder="e.g. Mumbai" />
+        </div>
+        <button type="submit" class="btn btn-primary" style="height:48px; margin-top:24px;">🔍 Search</button>
+        <a href="{{ url_for('search_donor') }}" class="btn btn-outline" style="height:48px; margin-top:24px;">Clear</a>
+      </form>
+    </div>
+
+    <!-- QUICK FILTER BADGES -->
+    <div style="margin-bottom:28px;">
+      <span style="font-size:0.85rem; color:var(--muted); font-weight:600; margin-right:12px;">Quick search:</span>
+      {% for bg in ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] %}
+        <a href="{{ url_for('search_donor', blood_group=bg) }}" class="bg-badge" style="width:44px; height:44px; font-size:0.82rem; display:inline-flex; margin:4px; text-decoration:none;">{{ bg }}</a>
+      {% endfor %}
+    </div>
+
+    <!-- RESULTS -->
+    {% if blood_group or city %}
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;">
+        <h2 style="font-size:1.1rem; font-weight:700;">
+          {{ results|length }} donor{{ 's' if results|length != 1 }} found
+          {% if blood_group %} · Blood Group: <span style="color:var(--red);">{{ blood_group }}</span>{% endif %}
+          {% if city %} · City: <span style="color:var(--red);">{{ city }}</span>{% endif %}
+        </h2>
+        <a href="{{ url_for('request_blood') }}" class="btn btn-sm" style="background:var(--red-soft); color:var(--red); font-weight:600;">
+          🚨 Emergency Request
+        </a>
+      </div>
+
+      {% if results %}
+        {% for donor in results %}
+        <div class="donor-result">
+          <div class="bg-chip" style="width:52px; height:52px; font-size:0.95rem;">{{ donor.blood_group }}</div>
+          <div class="donor-info">
+            <h4>{{ donor.name }}</h4>
+            <p>📍 {{ donor.city }}</p>
+          </div>
+          <div class="donor-contact">
+            <div style="font-size:0.8rem; color:var(--muted); margin-bottom:4px;">Contact</div>
+            <div>{{ donor.phone }}</div>
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div style="text-align:center; padding:60px; background:var(--white); border-radius:var(--radius-lg); box-shadow:var(--shadow);">
+          <div style="font-size:3rem; margin-bottom:16px;">😔</div>
+          <h3 style="margin-bottom:10px;">No donors found</h3>
+          <p style="color:var(--muted); margin-bottom:24px;">No approved donors match your search criteria. Try a different city or blood group.</p>
+          <a href="{{ url_for('request_blood') }}" class="btn btn-primary">🚨 Post Emergency Request</a>
+        </div>
+      {% endif %}
+
+    {% else %}
+      <div style="text-align:center; padding:60px; background:var(--white); border-radius:var(--radius-lg); box-shadow:var(--shadow);">
+        <div style="font-size:3rem; margin-bottom:16px;">🔍</div>
+        <h3 style="margin-bottom:10px;">Search for Donors</h3>
+        <p style="color:var(--muted);">Select a blood group and/or city above to find available donors in our network.</p>
+      </div>
+    {% endif %}
+
+    <!-- CANT FIND BLOOD CTA -->
+    <div style="margin-top:40px; background:linear-gradient(135deg,var(--charcoal),#3D0C0C); border-radius:var(--radius-lg); padding:36px; display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap;">
+      <div>
+        <h3 style="color:var(--white); font-family:var(--font-display); font-size:1.4rem; margin-bottom:8px;">Can't find a matching donor?</h3>
+        <p style="color:#CCCCDD; font-size:0.92rem;">Post an emergency blood request. Our team will notify nearby donors immediately.</p>
+      </div>
+      <a href="{{ url_for('request_blood') }}" class="btn btn-primary btn-lg">🚨 Post Emergency Request</a>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

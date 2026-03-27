@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+{% block title %}LifeFlow — Donate Blood, Save Lives{% endblock %}
+
+{% block content %}
+
+<!-- HERO -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-grid">
+      <div class="hero-text">
+        <div class="hero-badge">🩸 National Blood Donor Registry</div>
+        <h1>Donate Blood,<br><em>Save Lives</em></h1>
+        <p>Connect with blood donors in your city instantly. Whether you're a donor or in need, LifeFlow bridges the gap — because every drop counts.</p>
+        <div class="hero-actions">
+          <a href="{{ url_for('donor_register') }}" class="btn btn-primary btn-lg">
+            💉 Register as Donor
+          </a>
+          <a href="{{ url_for('search_donor') }}" class="btn btn-outline btn-lg">
+            🔍 Find Blood Donor
+          </a>
+        </div>
+        <div style="margin-top:20px; display:flex; gap:24px; flex-wrap:wrap;">
+          <a href="{{ url_for('request_blood') }}" class="btn btn-sm" style="background:rgba(255,255,255,0.12); color:#fff; border:1px solid rgba(255,255,255,0.3);">
+            🚨 Emergency Blood Request
+          </a>
+          <a href="{{ url_for('admin_login') }}" class="btn btn-sm" style="background:rgba(255,255,255,0.08); color:#ccc; border:1px solid rgba(255,255,255,0.2);">
+            🔐 Admin Login
+          </a>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="pulse-ring">
+          <div class="drop-icon">🩸</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="container">
+    <div class="stats-grid">
+      <div class="stat-item">
+        <div class="stat-number" data-count="{{ total_donors }}">{{ total_donors }}</div>
+        <div class="stat-label">Registered Donors</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number" data-count="{{ total_requests }}">{{ total_requests }}</div>
+        <div class="stat-label">Blood Requests Served</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number" data-count="{{ cities }}">{{ cities }}</div>
+        <div class="stat-label">Cities Covered</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ABOUT SECTION -->
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag">Why Donate</div>
+      <h2 class="section-title">Blood Donation Saves Lives</h2>
+      <p class="section-sub">One donation can save up to 3 lives. Blood cannot be manufactured — it can only come from generous donors like you.</p>
+    </div>
+    <div class="cards-grid">
+      <div class="card">
+        <div class="card-icon">💊</div>
+        <h3>Safe & Simple</h3>
+        <p>The donation process takes only 8–10 minutes. Your blood volume replenishes naturally within 24 hours.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🏥</div>
+        <h3>Critical Need</h3>
+        <p>Hospitals need a constant supply of blood for surgeries, emergencies, and patients with chronic conditions.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">❤️</div>
+        <h3>Save 3 Lives</h3>
+        <p>Each whole blood donation can be separated into red cells, platelets, and plasma — helping multiple patients.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🩺</div>
+        <h3>Free Health Check</h3>
+        <p>Donors receive a complimentary mini health screening including blood pressure, hemoglobin, and pulse checks.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="section section-alt">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag">Platform Guide</div>
+      <h2 class="section-title">How LifeFlow Works</h2>
+      <p class="section-sub">From registration to donation — a seamless, secure process that connects donors and recipients.</p>
+    </div>
+    <div class="steps-grid">
+      <div class="step">
+        <div class="step-num">1</div>
+        <h4>Register</h4>
+        <p>Fill out our simple donor registration form with your blood group, city, and contact details.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <h4>Get Verified</h4>
+        <p>Our admin team reviews and approves your profile to ensure a trusted donor network.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <h4>Get Matched</h4>
+        <p>Hospitals and patients search for donors by blood group and city to find the right match.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <h4>Donate & Track</h4>
+        <p>Donate blood and log it in your dashboard. View your complete donation history anytime.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BLOOD GROUPS -->
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag">All Groups Welcome</div>
+      <h2 class="section-title">We Accept All Blood Groups</h2>
+      <p class="section-sub">Every blood type is precious. Register today regardless of your blood group.</p>
+    </div>
+    <div class="blood-groups">
+      {% for bg in ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] %}
+        <a href="{{ url_for('search_donor', blood_group=bg) }}" class="bg-badge">{{ bg }}</a>
+      {% endfor %}
+    </div>
+    <p class="text-center mt-3" style="color:var(--muted); font-size:0.9rem;">Click a blood group to find available donors</p>
+  </div>
+</section>
+
+<!-- CTA -->
+<section style="background: linear-gradient(135deg, var(--red), var(--red-dark)); padding: 80px 0; text-align:center;">
+  <div class="container">
+    <h2 style="font-family: var(--font-display); font-size: 2.4rem; color: var(--white); margin-bottom: 16px;">Ready to Save a Life?</h2>
+    <p style="color: rgba(255,255,255,0.8); margin-bottom: 36px; font-size: 1.05rem;">Join thousands of donors already making a difference in their communities.</p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <a href="{{ url_for('donor_register') }}" class="btn btn-lg" style="background:var(--white); color:var(--red); font-weight:700;">💉 Register Now</a>
+      <a href="{{ url_for('request_blood') }}" class="btn btn-lg btn-outline" style="border-color:rgba(255,255,255,0.6); color:var(--white);">🚨 Emergency Request</a>
+    </div>
+  </div>
+</section>
+
+{% endblock %}
